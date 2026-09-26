@@ -8,26 +8,26 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #58a6ff;
-    --accent-2: #3fb950;
-    --danger: #f85149;
-    --border: #30363d;
-    --shadow: 0 10px 40px rgba(0,0,0,.45);
+    --bg: #0b1f33;
+    --surface: #143552;
+    --text: #edf6ff;
+    --muted: #b9d6f2;
+    --accent: #4da3ff;
+    --accent-2: #f9d75c;
+    --danger: #ff7a59;
+    --border: #295b8e;
+    --shadow: 0 10px 40px rgba(7, 18, 32, .45);
   }
   [data-theme="light"] {
-    --bg: #f6f8fa;
+    --bg: #f3f8ff;
     --surface: #ffffff;
-    --text: #1f2328;
-    --muted: #656d76;
-    --accent: #0969da;
-    --accent-2: #1a7f37;
-    --danger: #cf222e;
-    --border: #d0d7de;
-    --shadow: 0 10px 40px rgba(0,0,0,.10);
+    --text: #12314d;
+    --muted: #56739a;
+    --accent: #1f7ae0;
+    --accent-2: #f7c948;
+    --danger: #ee6c4d;
+    --border: #d3e2ff;
+    --shadow: 0 10px 40px rgba(33, 74, 128, .12);
   }
 
   * { box-sizing: border-box; }
@@ -89,8 +89,8 @@
   }
 
   .modes button[aria-selected="true"] {
-    background: var(--accent);
-    color: #fff;
+    background: var(--accent-2);
+    color: #1a2d4d;
   }
 
   .icon-btn {
@@ -107,7 +107,7 @@
     transition: .18s;
     flex-shrink: 0;
   }
-  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
 
   .actions { display: flex; gap: 10px; flex-shrink: 0; }
 
@@ -175,7 +175,7 @@
     cursor: pointer;
     transition: .18s;
   }
-  .chip:hover, .chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+  .chip:hover, .chip[aria-pressed="true"] { color: var(--accent-2); border-color: var(--accent-2); }
 
   .hidden { display: none !important; }
 
