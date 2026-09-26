@@ -194,18 +194,18 @@
 <body>
 
 <header>
-  <h1 id="title">Stopwatch</h1>
+  <h1 id="title">Timer</h1>
   <div class="modes" role="tablist">
-    <button role="tab" id="tab-stopwatch" aria-selected="true">Stopwatch</button>
-    <button role="tab" id="tab-timer" aria-selected="false">Timer</button>
+    <button role="tab" id="tab-stopwatch" aria-selected="false">Stopwatch</button>
+    <button role="tab" id="tab-timer" aria-selected="true">Timer</button>
   </div>
   <button class="icon-btn" id="theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
 </header>
 
-<div class="display" id="display">00:00.00</div>
+<div class="display" id="display">05:00</div>
 <div class="label" id="label"></div>
 
-<div class="presets hidden" id="presets">
+<div class="presets" id="presets">
   <button class="chip" data-sec="60">1 min</button>
   <button class="chip" data-sec="180">3 min</button>
   <button class="chip" data-sec="300">5 min</button>
@@ -216,7 +216,7 @@
 
 <div class="controls">
   <button class="btn primary" id="start">Start</button>
-  <button class="btn" id="lap">Lap</button>
+  <button class="btn" id="lap">+1 min</button>
   <button class="btn ghost" id="reset">Reset</button>
 </div>
 
@@ -229,7 +229,7 @@
         lapBtn = $('lap'), resetBtn = $('reset'), presets = $('presets'),
         title = $('title');
 
-  let mode = 'stopwatch';           // 'stopwatch' | 'timer'
+  let mode = 'timer';                // 'stopwatch' | 'timer'
   let running = false;
   let swElapsed = 0, swStart = 0;   // stopwatch
   let tRemaining = 0, tEnd = 0;     // timer
