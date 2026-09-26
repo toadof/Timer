@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Timer</title>
+<meta name="description" content="A huge, simple stopwatch and countdown timer with dark mode.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-2: #3fb950;
+    --danger: #f85149;
+    --border: #30363d;
+    --shadow: 0 10px 40px rgba(0,0,0,.45);
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-2: #1a7f37;
+    --danger: #cf222e;
+    --border: #d0d7de;
+    --shadow: 0 10px 40px rgba(0,0,0,.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 3vh, 32px);
+    padding: 24px;
+    transition: background .25s ease, color .25s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  header {
+    width: min(900px, 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .modes {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .modes button {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: .18s;
+  }
+
+  .modes button[aria-selected="true"] {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: .18s;
+    flex-shrink: 0;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .display {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 700;
+    font-size: clamp(64px, 18vw, 220px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    user-select: none;
+    text-align: center;
+    transition: color .2s;
+  }
+  .display.running { color: var(--accent); }
+  .display.done { color: var(--danger); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  .label {
+    color: var(--muted);
+    font-size: clamp(13px, 2vw, 15px);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    text-align: center;
+    min-height: 1.2em;
+    margin-top: -12px;
+  }
+
+  .controls { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+  .btn {
+    min-width: 150px;
+    padding: 16px 30px;
+    font-size: clamp(15px, 2vw, 17px);
+    font-weight: 600;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: .18s;
+    box-shadow: var(--shadow);
+  }
+  .btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .btn:active { transform: translateY(0); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { box-shadow: none; color: var(--muted); }
+  .btn.ghost:hover { color: var(--danger); border-color: var(--danger); }
+
+  .presets { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .chip {
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: .18s;
+  }
+  .chip:hover, .chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+
+  .hidden { display: none !important; }
+
+  footer {
+    position: fixed;
+    bottom: 14px;
+    color: var(--muted);
+    font-size: 12px;
+    opacity: .7;
+  }
+  kbd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-family: inherit;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">Stopwatch</h1>
+  <div class="modes" role="tablist">
+    <button role="tab" id="tab-stopwatch" aria-selected="true">Stopwatch</button>
+    <button role="tab" id="tab-timer" aria-selected="false">Timer</button>
+  </div>
+  <button class="icon-btn" id="theme" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+</header>
+
+<div class="display" id="display">00:00.00</div>
+<div class="label" id="label"></div>
+
+<div class="presets hidden" id="presets">
+  <button class="chip" data-sec="60">1 min</button>
+  <button class="chip" data-sec="180">3 min</button>
+  <button class="chip" data-sec="300">5 min</button>
+  <button class="chip" data-sec="600">10 min</button>
+  <button class="chip" data-sec="900">15 min</button>
+  <button class="chip" data-sec="1800">30 min</button>
+</div>
+
+<div class="controls">
+  <button class="btn primary" id="start">Start</button>
+  <button class="btn" id="lap">Lap</button>
+  <button class="btn ghost" id="reset">Reset</button>
+</div>
+
+<footer><kbd>Space</kbd> start / pause &nbsp;·&nbsp; <kbd>R</kbd> reset &nbsp;·&nbsp; <kbd>L</kbd> lap</footer>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const display = $('display'), label = $('label'), startBtn = $('start'),
+        lapBtn = $('lap'), resetBtn = $('reset'), presets = $('presets'),
+        title = $('title');
+
+  let mode = 'stopwatch';           // 'stopwatch' | 'timer'
+  let running = false;
+  let swElapsed = 0, swStart = 0;   // stopwatch
+  let tRemaining = 0, tEnd = 0;     // timer
+  let raf = null;
+
+  // ---------- theme ----------
+  const themeBtn = $('theme');
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.dataset.theme = saved;
+  syncThemeBtn();
+  themeBtn.onclick = () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    syncThemeBtn();
+  };
+  function syncThemeBtn() {
+    themeBtn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀️' : '🌙';
+  }
+
+  // ---------- formatting ----------
+  const pad = (n, l = 2) => String(Math.floor(n)).padStart(l, '0');
+
+  function fmtStopwatch(ms) {
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 60;
+    const h = Math.floor(ms / 3600000);
+    const core = `${pad(m)}:${pad(s)}.${pad(cs)}`;
+    return h > 0 ? `${pad(h)}:${core}` : core;
+  }
+
+  function fmtTimer(ms) {
+    if (ms < 0) ms = 0;
+    const total = Math.ceil(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  }
+
+  // ---------- rendering ----------
+  function currentMs() {
+    if (mode === 'stopwatch') return running ? swElapsed + (performance.now() - swStart) : swElapsed;
+    return running ? Math.max(0, tEnd - performance.now()) : tRemaining;
+  }
+
+  function render() {
+    const ms = currentMs();
+    display.textContent = mode === 'stopwatch' ? fmtStopwatch(ms) : fmtTimer(ms);
+    display.classList.toggle('running', running);
+    display.classList.toggle('done', mode === 'timer' && !running && tRemaining === 0 && wasRunning);
+  }
+
+  let wasRunning = false;
+  let laps = [];
+
+  function loop() {
+    render();
+    if (mode === 'timer' && running && performance.now() >= tEnd) {
+      finish();
+      return;
+    }
+    if (running) raf = requestAnimationFrame(loop);
+  }
+
+  function finish() {
+    running = false;
+    wasRunning = true;
+    tRemaining = 0;
+    startBtn.textContent = 'Start';
+    label.textContent = "Time's up!";
+    display.classList.remove('running');
+    render();
+    beep();
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+    try { document.title = "⏰ Time's up!"; } catch (e) {}
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, .3, .6].forEach((t, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = i === 2 ? 523.25 : 880;
+        o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + t + 0.25);
+        o.start(ctx.currentTime + t);
+        o.stop(ctx.currentTime + t + 0.3);
+      });
+    } catch (e) {}
+  }
+
+  // ---------- controls ----------
+  function start() {
+    if (running) return pause();
+    if (mode === 'timer' && tRemaining <= 0) return;
+    running = true;
+    wasRunning = true;
+    if (mode === 'stopwatch') swStart = performance.now();
+    else tEnd = performance.now() + tRemaining;
+    startBtn.textContent = 'Pause';
+    label.textContent = mode === 'timer' ? 'Counting down' : 'Timing';
+    document.title = 'Simple Timer';
+    cancelAnimationFrame(raf);
+    loop();
+  }
+
+  function pause() {
+    if (!running) return;
+    running = false;
+    if (mode === 'stopwatch') swElapsed += performance.now() - swStart;
+    else tRemaining = tEnd - performance.now();
+    startBtn.textContent = 'Resume';
+    label.textContent = 'Paused';
+    cancelAnimationFrame(raf);
+    render();
+  }
+
+  function reset() {
+    running = false;
+    wasRunning = false;
+    cancelAnimationFrame(raf);
+    laps = [];
+    if (mode === 'stopwatch') { swElapsed = 0; swStart = 0; startBtn.textContent = 'Start'; }
+    else { tRemaining = defaultDuration(); tEnd = 0; startBtn.textContent = 'Start'; }
+    label.textContent = '';
+    display.classList.remove('done');
+    document.title = 'Simple Timer';
+    render();
+    updateChips();
+  }
+
+  function lap() {
+    if (mode !== 'stopwatch') {
+      // timer: add 1 minute
+      tRemaining = (running ? tEnd - performance.now() : tRemaining) + 60000;
+      if (running) tEnd = performance.now() + tRemaining;
+      label.textContent = '+1 minute';
+      render();
+      return;
+    }
+    if (!running && swElapsed === 0) return;
+    laps.push(currentMs());
+    if (laps.length > 3) laps.shift();
+    label.textContent = laps.map(fmtStopwatch).reverse().join('   ·   ');
+  }
+
+  function setMode(next) {
+    if (next === mode) return;
+    running = false;
+    wasRunning = false;
+    cancelAnimationFrame(raf);
+    mode = next;
+    $('tab-stopwatch').setAttribute('aria-selected', String(mode === 'stopwatch'));
+    $('tab-timer').setAttribute('aria-selected', String(mode === 'timer'));
+    title.textContent = mode === 'stopwatch' ? 'Stopwatch' : 'Timer';
+    presets.classList.toggle('hidden', mode !== 'timer');
+    lapBtn.textContent = mode === 'stopwatch' ? 'Lap' : '+1 min';
+    reset();
+  }
+
+  function defaultDuration() { return 300000; } // 5 min
+
+  function setDuration(sec) {
+    if (running) pause();
+    tRemaining = sec * 1000;
+    tEnd = 0;
+    wasRunning = false;
+    label.textContent = '';
+    display.classList.remove('done');
+    startBtn.textContent = 'Start';
+    updateChips();
+    render();
+  }
+
+  function updateChips() {
+    [...presets.children].forEach(c =>
+      c.setAttribute('aria-pressed', String(Number(c.dataset.sec) * 1000 === tRemaining)));
+  }
+
+  // ---------- events ----------
+  startBtn.onclick = start;
+  resetBtn.onclick = reset;
+  lapBtn.onclick = lap;
+  $('tab-stopwatch').onclick = () => setMode('stopwatch');
+  $('tab-timer').onclick = () => setMode('timer');
+  presets.onclick = e => {
+    const c = e.target.closest('.chip');
+    if (c) setDuration(Number(c.dataset.sec));
+  };
+
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input, textarea')) return;
+    if (e.code === 'Space') { e.preventDefault(); start(); }
+    else if (e.key.toLowerCase() === 'r') reset();
+    else if (e.key.toLowerCase() === 'l') lap();
+    else if (e.key === 'ArrowUp' && mode === 'timer') { e.preventDefault(); setDuration(Math.round(currentMs()/1000) + 60); }
+    else if (e.key === 'ArrowDown' && mode === 'timer') { e.preventDefault(); setDuration(Math.max(0, Math.round(currentMs()/1000) - 60)); }
+  });
+
+  // init
+  tRemaining = defaultDuration();
+  updateChips();
+  render();
+})();
+</script>
+</body>
+</html>
